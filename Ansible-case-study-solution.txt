@@ -1,0 +1,90 @@
+
+#Ansible Case-Study solution:
+    sudo su
+    apt-get update -y
+    apt-get install python3 -y
+On Master:
+    apt-get install ansible -y
+    sudo nano /etc/ansible/hosts
+        [apacheserver]
+        slave1 ansible_ssh_host=172.31.83.119 ansible_ssh_user=ubuntu ansible_python_interpreter=/usr/bin/python3
+        [nginxserver]
+        slave2 ansible_ssh_host=54.167.197.208 ansible_ssh_user=ubuntu ansible_python_interpreter=/usr/bin/python3
+    ssh-keygen
+    copy the rsa.pub key on slave nodes at .ssh/authorized_keys
+    ansible -m ping all
+    cd /etc/ansible/
+    mkdir roles
+    cd roles/
+    ansible-galaxy init apache --offline
+    ansible-galaxy init nginx --offline
+    apt  install tree
+    cd /etc/ansible/
+    nano site.yml
+        ---
+        - hosts: apacheserver
+          roles:
+            - apache
+        - hosts: nginxserver
+          roles:
+            - nginx
+    cat site.yml
+    ansible-playbook site.yml --syntax-check
+    ansible-playbook site.yml
+
+======================>
+---
+ - name: Installing apache
+   become: true
+   apt: "name=apache2 state=present"
+
+---
+ - name: Configuring apache
+   become: true
+   copy: "src=index.html dest=/var/www/html"
+
+---
+ - name: Starting apache
+   become: true
+   service: "name=apache2 state=started"
+
+---
+ - name: Installing Java
+   become: true
+   apt: "name=openjdk-8-jdk state=present"
+=============================================>
+---
+ - name: Installing Nginx
+   become: true
+   apt: "name=nginx state=present"
+
+---
+ - name: Configuring nginx
+   become: true
+   copy: "src=index.html dest=/var/www/html"
+
+---
+ - name: Starting nginx
+   become: true
+   service: "name=nginx state=started"
+---------------------------------------------->
+<html>
+<body style="background-color:green;">
+<h1>Hello Everyone</h1>
+<h2>Welcome to Apache web server</h2>
+</body>
+</html>
+
+<html>
+<body style="background-color:blue;">
+<h1>Hello Everyone</h1>
+<h2>Welcome to Nginx web server</h2>
+</body>
+</html>
+---------------------------------------->
+
+
+
+
+
+
