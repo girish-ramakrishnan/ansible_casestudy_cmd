@@ -26,7 +26,11 @@ On Master:
 
     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/baremetal/deploy.yaml
     kubectl get svc --all-namespaces
-    sudo nano ingress.yaml
+    kubectl create service apache --tcp=80:80
+    kubectl create service clusterip apache --tcp=80:80
+    kubectl create service clusterip custom --tcp=80:80
+    sudo nano ingress.yaml #Add accordingly
+    https://kubernetes.io/docs/concepts/services-networking/ingress/
 ================================================================
 apiVersion: apps/v1
 kind: Deployment
