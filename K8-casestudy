@@ -1,0 +1,89 @@
+============================Kubernetes on ubuntu:20.04
+------------------------->use t2.medium for Kmaster
+On Master&Slave node(s)
+    sudo su
+# install Docker
+    apt-get update
+    apt-get install docker.io -y
+    service docker restart
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" >/etc/apt/sources.list.d/kubernetes.list
+    apt-get update
+    apt install kubeadm=1.20.0-00 kubectl=1.20.0-00 kubelet=1.20.0-00 -y
+On Master:
+
+    kubeadm init --pod-network-cidr=192.168.0.0/16
+    exit 
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+    kubeadm token create --print-join-command
+On Node:
+    sudo su    
+    #Run join command
+On Master:
+    kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/baremetal/deploy.yaml
+    kubectl get svc --all-namespaces
+    sudo nano ingress.yaml
+================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apache-deployment
+  labels:
+    app: apache
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apache
+  template:
+    metadata:
+      labels:
+        app: apache
+    spec:
+      containers:
+      - name: apache
+        image: ubuntu/aapche2
+        ports:
+        - containerPort: 80
+==============================================>
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-deployment
+  labels:
+    app: custom
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: custom
+  template:
+    metadata:
+      labels:
+        app: custom
+    spec:
+      containers:
+      - name: custom
+        image: azharbhaidocker/customrepo22:new
+        ports:
+        - containerPort: 80
+================================================>
+FROM ubuntu:18.04
+RUN apt-get update
+RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
+RUN apt-get -y install apache2
+ADD . /var/www/html
+ENTRYPOINT apachectl -D FOREGROUND
+================================================>
+#!/bin/bash
+apt-get update
+apt-get install docker.io -y
+service docker restart
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" >/etc/apt/sources.list.d/kubernetes.list
+apt-get update
+apt install kubeadm=1.20.0-00 kubectl=1.20.0-00 kubelet=1.20.0-00 -y
